@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<title>Users</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+	href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
+	integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz"
+	crossorigin="anonymous">
+</head>
+<body>
+	<div th:switch="${users}" class="container my-36">
+		<div class="row">
+			<div class="col-md-36">
+				<h2 th:case="null">No users yet!</h2>
+				<div th:case="*">
+					<h2 class="my-5">Users</h2>
+					<table class="table table-striped table-responsive-md">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Email</th>
+								<th>&nbsp;&nbsp;</th>
+								<th>INFO</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="user : ${users}">
+								<td th:text="${user.name}"></td>
+								<td th:text="${user.email}"></td>
+								<td>&nbsp;&nbsp;</td>
+								<td><a th:href="@{/read?url={id}(id=${user.email})}"
+									class="btn btn-primary"><i class="fa fa-binoculars ml-2"></i></a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

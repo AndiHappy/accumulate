@@ -38,6 +38,7 @@
 			<scope>test</scope>
 		</dependency>
 
+<!--		chrome驱动安装-->
 		<!-- https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java -->
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
@@ -45,12 +46,14 @@
 			<version>3.141.59</version>
 		</dependency>
 
+<!--		GETTER SETTER 的依赖-->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<version>1.18.12</version>
 		</dependency>
 
+<!--		JSON的数据库依赖-->
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -58,7 +61,21 @@
 			<version>2.11.3</version>
 		</dependency>
 
+<!--		StringUtils的依赖-->
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.10</version>
+		</dependency>
 
+<!--		FileUtils的依赖-->
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
 
 
 	</dependencies>

@@ -18,4 +18,8 @@ public class ConfigUtil {
     
     public static final long fileStoreMaxSizePath = 1024*1024*1024L;
 
+    public static boolean isPageContent(String content) {
+        if(content != null && content.length() > 200) return true;
+        return false;
+    }
 }

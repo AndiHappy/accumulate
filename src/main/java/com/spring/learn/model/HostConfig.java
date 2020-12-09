@@ -6,8 +6,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class HostConfig {
-    private String containClassName;
-    private String containTagName;
-    private String containIdName;
+    private String containSelector;
     private String chapterTagName;
+    private String pageContentSelector;
 }

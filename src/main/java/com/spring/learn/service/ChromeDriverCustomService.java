@@ -1,11 +1,15 @@
 package com.spring.learn.service;
 
+import com.spring.learn.model.HostConfig;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 
 @Service("chromeDriverCustomService")
@@ -13,9 +17,12 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     private ChromeDriver driver;
 
+    @Resource
+    private ConfigCustomService configCustomService;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        System.setProperty("webdriver.chrome.driver", "accumulate/src/main/resources/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver");
         // Optional, if not specified, WebDriver will search your path for chromedriver.
         ChromeOptions options = new ChromeOptions();
 		options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-popup-blocking"));
@@ -34,5 +41,22 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public void setDriver(ChromeDriver driver) {
         this.driver = driver;
+    }
+
+
+    public void findChapterLink(String allChaptersLinks) {
+        try {
+            URL chaptersLinks = new URL(allChaptersLinks);
+            String host = chaptersLinks.getHost();
+            HostConfig config = configCustomService.getHostConfig(host);
+            driver.get(allChaptersLinks);
+            //根据config
+
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

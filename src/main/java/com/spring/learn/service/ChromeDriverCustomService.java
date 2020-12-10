@@ -30,6 +30,9 @@ public class ChromeDriverCustomService implements InitializingBean {
     @Resource
     private ConfigCustomService configCustomService;
 
+    @Resource
+    private FileCacheService fileCacheService;
+
     @Override
     public void afterPropertiesSet() throws Exception {
         System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver");
@@ -125,8 +128,8 @@ public class ChromeDriverCustomService implements InitializingBean {
         String content = null;
         try {
             if (config == null) config = configCustomService.findHostConfig(pageLink);
-
             driver.get(pageLink);
+            //TODO  检查缓存
             log.debug("load:{}", pageLink);
             WebElement pageContent = null;
 
@@ -174,8 +177,15 @@ public class ChromeDriverCustomService implements InitializingBean {
         if (pages != null && !pages.isEmpty()) {
             List<String> pageContents = new ArrayList<String>();
             for (String pageLink : pages.keySet()) {
+                String name = pages.get(pageLink);
                 String content = pageContent(pageLink,storeFile,config);
-                log.info("find page: {} content.", pages.get(pageLink));
+                log.info("find page: {} content.", name);
+
+                if(ConfigUtil.isPageContent(content)){
+                    //cache
+                    fileCacheService.save2SignalFile(storeFile.getName(),name,content);
+                }
+
                 pageContents.add(content);
             }
             return pageContents;

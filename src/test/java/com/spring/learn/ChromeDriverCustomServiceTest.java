@@ -25,17 +25,17 @@ public class ChromeDriverCustomServiceTest {
     @Test
     public void findChapterLink() throws IOException {
 
-        String link = "https://www.biduo.cc/biquge/15_15881/";
-
-        String pageLink = "https://www.biduo.cc/biquge/15_15881/c4644037.html";
-
-        HostConfig hostconfig = configCustomService.findHostConfig(pageLink);
-
-        service.pageContent(pageLink,hostconfig);
+        String link = "https://www.biduo.cc/biquge/1_1476/";
+//
+//        String pageLink = "https://www.biduo.cc/biquge/15_15881/c4644037.html";
+//
+//        HostConfig hostconfig = configCustomService.findHostConfig(pageLink);
+//
+//        service.pageContent(pageLink,hostconfig);
 
         TreeMap<String, String> result = service.findChapterLink(link,null);
 
-        File storeFile = new File("v.txt");
+        File storeFile = new File("shenhua.txt");
         if (!storeFile.exists()) {
             storeFile.createNewFile();
         }else {
@@ -47,5 +47,18 @@ public class ChromeDriverCustomServiceTest {
         res.clear();
         System.out.println(storeFile.getAbsolutePath());
 
+    }
+
+    @Test
+    public void order() throws IOException {
+        String begine = "https://www.dingdiann.com/ddk14238/8050319.html";
+        File storeFile = new File("guatou.txt");
+        if (!storeFile.exists()) {
+            storeFile.createNewFile();
+        }else {
+            storeFile.delete();
+            storeFile.createNewFile();
+        }
+        service.orderStore(begine,null,storeFile);
     }
 }

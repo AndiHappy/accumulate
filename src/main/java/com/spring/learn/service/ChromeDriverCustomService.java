@@ -1,6 +1,7 @@
 package com.spring.learn.service;
 
 import com.spring.learn.model.HostConfig;
+import com.spring.learn.model.HtmlPage;
 import com.spring.learn.util.ConfigUtil;
 import com.spring.learn.util.CustomerFileUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -54,6 +56,106 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public void setDriver(ChromeDriver driver) {
         this.driver = driver;
+    }
+
+    public HtmlPage orderStore(String begin, HostConfig config, File storeFile) throws IOException {
+        HtmlPage cur = constructHtmlPage(begin,config,storeFile);
+        HtmlPage head = cur;
+        while(cur.getNext() != null){
+            cur.setNext(constructHtmlPage(cur.getNext().getLink(),config,storeFile));
+            CustomerFileUtils.write(storeFile,"\n",true);
+            CustomerFileUtils.write(storeFile,cur.getPageTitle(),true);
+            CustomerFileUtils.write(storeFile,"\n",true);
+            CustomerFileUtils.write(storeFile,cur.getContent(),true);
+            cur = cur.getNext();
+        }
+        return head;
+
+    }
+
+    /**
+     * 构建当前值
+     * */
+    public HtmlPage constructHtmlPage(HtmlPage cur, HostConfig config, File storeFile) {
+        if(StringUtils.isBlank(cur.getContent())) {
+            cur = constrctContent(cur,config,storeFile);
+        }
+        if(StringUtils.isBlank(cur.getPageTitle())) {
+            cur = constrctTitle(cur,config,storeFile);
+        }
+        if(cur.getNext() == null) {
+            cur = constrctNext(cur,config,storeFile);
+        }
+        return cur;
+    }
+
+
+    public HtmlPage constructHtmlPage(String pageLink, HostConfig config, File storeFile) {
+        if (config == null) config = configCustomService.findHostConfig(pageLink);
+        driver.get(pageLink);
+        log.debug("load:{}", pageLink);
+        HtmlPage htmlPage = new HtmlPage(pageLink);
+        htmlPage = constrctContent(htmlPage,config,storeFile);
+        htmlPage = constrctTitle(htmlPage,config,storeFile);
+        htmlPage = constrctNext(htmlPage,config,storeFile);
+        return htmlPage;
+    }
+
+    public HtmlPage constrctNext(HtmlPage htmlPage, HostConfig config, File storeFile){
+        WebElement next = null;
+        //根据config，找到包含目录的html的部分
+        if (StringUtils.isNotBlank(config.getNextSelector())) {
+            next = driver.findElementByCssSelector(config.getNextSelector());
+        }
+        if (next != null && next.isEnabled()) {
+            String href = next.getAttribute("href");
+            HtmlPage nextPage = new HtmlPage(href);
+            htmlPage.setNext(nextPage);
+        } else {
+            throw new IllegalArgumentException("not find next chapter HTML ELEMENT ");
+        }
+        return htmlPage;
+    }
+
+    public HtmlPage constrctTitle(HtmlPage htmlPage, HostConfig config, File storeFile){
+        // chapter的名称
+        Assert.notNull(config.getPageTitleSelector(), "HostConfig pageTitle selector is null");
+        WebElement pageTitle = driver.findElementByCssSelector(config.getPageTitleSelector());
+        Assert.notNull(pageTitle, "cssSelector pageTitle  is null: "+ htmlPage.getLink());
+        String title = pageTitle.getText();
+        Assert.notNull(title, "Title is null: "+ htmlPage.getLink());
+        htmlPage.setPageTitle(title);
+        log.info("load: "+ title);
+        return htmlPage;
+    }
+
+    public HtmlPage constrctContent(HtmlPage htmlPage, HostConfig config, File storeFile){
+        // chapter的内容
+        Assert.notNull(config.getContainSelector(), "HostConfig pageContent selector is null");
+
+        WebElement pageContent = driver.findElementByCssSelector(config.getContainSelector());
+        Assert.notNull(pageContent, "cssSelector pageContent is null");
+
+
+        if (pageContent != null && pageContent.isEnabled()) {
+            log.debug("find pageContent:{}", pageContent);
+            String content = pageContent.getText();
+            if (ConfigUtil.isPageContent(content)) {
+                // 进行过滤
+                if (config != null && config.getRemoveArray() != null && config.getRemoveArray().length > 0) {
+                    String[] remove = config.getRemoveArray();
+                    for (String removeKeys : remove) {
+                        content = StringUtils.remove(content, removeKeys);
+                    }
+                }
+                htmlPage.setContent(content);
+            } else {
+                log.error("pageContent:{} is ERROR.", pageContent);
+            }
+        } else {
+            throw new IllegalArgumentException("not find pageContent chapter HTML ELEMENT ");
+        }
+        return htmlPage;
     }
 
 
@@ -120,8 +222,8 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     }
 
-    public List<String> pageContent(TreeMap<String, String> pages,HostConfig config) {
-        return pageContent(pages, null,config);
+    public List<String> pageContent(TreeMap<String, String> pages, HostConfig config) {
+        return pageContent(pages, null, config);
     }
 
     public String pageContent(String pageLink, File storeFile, HostConfig config) {
@@ -143,10 +245,10 @@ public class ChromeDriverCustomService implements InitializingBean {
                 content = pageContent.getText();
                 if (ConfigUtil.isPageContent(content)) {
                     // 进行过滤
-                    if(config != null && config.getRemoveArray() != null && config.getRemoveArray().length > 0){
+                    if (config != null && config.getRemoveArray() != null && config.getRemoveArray().length > 0) {
                         String[] remove = config.getRemoveArray();
-                        for (String removeKeys :remove) {
-                            content = StringUtils.remove(content,removeKeys);
+                        for (String removeKeys : remove) {
+                            content = StringUtils.remove(content, removeKeys);
                         }
                     }
                 } else {
@@ -169,21 +271,21 @@ public class ChromeDriverCustomService implements InitializingBean {
     }
 
     // 根据pageLink，获取内容
-    public String pageContent(String pageLink,HostConfig config) {
-        return pageContent(pageLink, null,config);
+    public String pageContent(String pageLink, HostConfig config) {
+        return pageContent(pageLink, null, config);
     }
 
-    public List<String> pageContent(TreeMap<String, String> pages, File storeFile,HostConfig config) {
+    public List<String> pageContent(TreeMap<String, String> pages, File storeFile, HostConfig config) {
         if (pages != null && !pages.isEmpty()) {
             List<String> pageContents = new ArrayList<String>();
             for (String pageLink : pages.keySet()) {
                 String name = pages.get(pageLink);
-                String content = pageContent(pageLink,storeFile,config);
+                String content = pageContent(pageLink, storeFile, config);
                 log.info("find page: {} content.", name);
 
-                if(ConfigUtil.isPageContent(content)){
+                if (ConfigUtil.isPageContent(content)) {
                     //cache
-                    fileCacheService.save2SignalFile(storeFile.getName(),name,content);
+                    fileCacheService.save2SignalFile(storeFile.getName(), name, content);
                 }
 
                 pageContents.add(content);
@@ -192,4 +294,6 @@ public class ChromeDriverCustomService implements InitializingBean {
         }
         return null;
     }
+
+
 }

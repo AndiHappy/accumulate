@@ -30,7 +30,7 @@ public class ConfigCustomService implements InitializingBean {
 
     private Map<String,HostConfig> hostConfigMap = new HashMap<>();
 
-    private static final String resource = "src/main/resources/host.yaml";
+    private static final String resource = "accumulate/src/main/resources/host.yaml";
 
     private static DumperOptions dumperOptions = new DumperOptions();
     static{

@@ -38,7 +38,7 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "accumulate/src/main/resources/chromedriver");
         // Optional, if not specified, WebDriver will search your path for chromedriver.
         ChromeOptions options = new ChromeOptions();
         options.setExperimentalOption("excludeSwitches", Arrays.asList("disable-popup-blocking"));

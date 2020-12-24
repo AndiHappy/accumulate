@@ -3,6 +3,9 @@ containS: "#list > dl"
 hostN: "www.bqg5.cc"
 titleS: "#info > h1"
 chapterTagName: "dd"
+pageTitleS: "#wrapper > div.content_read > div > div.bookname > h1"
+contentS: "#content"
+nextS: "#wrapper > div.content_read > div > div.bookname > div.bottem1 > a:nth-child(5)"
 remove: 
 - '44343'
 - dsdasa

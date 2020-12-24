@@ -23,4 +23,6 @@ public class HostConfig implements Serializable {
 
     private String titleS;
 
+    private String pageTitleS;
+
 }

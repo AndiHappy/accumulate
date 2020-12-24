@@ -63,11 +63,11 @@ public class ChromeDriverCustomService implements InitializingBean {
         HtmlPage cur = constructHtmlPage(begin,config,storeFile);
         HtmlPage head = cur;
         while(cur.getNext() != null){
-            cur.setNext(constructHtmlPage(cur.getNext().getLink(),config,storeFile));
-            CustomerFileUtils.write(storeFile,"\n",true);
             CustomerFileUtils.write(storeFile,cur.getPageTitle(),true);
-            CustomerFileUtils.write(storeFile,"\n",true);
+            CustomerFileUtils.write(storeFile,"\n\n",true);
             CustomerFileUtils.write(storeFile,cur.getContent(),true);
+            CustomerFileUtils.write(storeFile,"\n\n",true);
+            cur.setNext(constructHtmlPage(cur.getNext().getLink(),config,storeFile));
             cur = cur.getNext();
         }
         return head;
@@ -92,24 +92,31 @@ public class ChromeDriverCustomService implements InitializingBean {
 
 
     public HtmlPage constructHtmlPage(String pageLink, HostConfig config, File storeFile) {
-        if (config == null) config = configCustomService.findHostConfig(pageLink);
-        driver.get(pageLink);
-        log.debug("load:{}", pageLink);
-        HtmlPage htmlPage = new HtmlPage(pageLink);
-        htmlPage = constrctTitle(htmlPage,config,storeFile);
-        if(!ConfigUtil.chapterLinkPattern.matcher(htmlPage.getPageTitle()).find()){
-            log.error("discard:{} !",htmlPage.getPageTitle(),htmlPage.getLink());
-        }else{
-            htmlPage = constrctContent(htmlPage,config,storeFile);
-        }
+        try {
+            if (config == null) config = configCustomService.findHostConfig(pageLink);
+            driver.get(pageLink);
+            log.debug("load:{}", pageLink);
+            HtmlPage htmlPage = new HtmlPage(pageLink);
+            htmlPage = constrctTitle(htmlPage,config,storeFile);
+            if(!ConfigUtil.chapterLinkPattern.matcher(htmlPage.getPageTitle()).find()){
+                log.error("discard:{} !",htmlPage.getPageTitle(),htmlPage.getLink());
+            }else{
+                htmlPage = constrctContent(htmlPage,config,storeFile);
+            }
 
-        htmlPage = constrctNext(htmlPage,config,storeFile);
-        return htmlPage;
+            htmlPage = constrctNext(htmlPage,config,storeFile);
+            return htmlPage;
+        }catch (Exception e){
+            log.error("constructHtmlPage: {} is error:{}",pageLink,e);
+            return null;
+        }
     }
 
     public HtmlPage constrctNext(HtmlPage htmlPage, HostConfig config, File storeFile){
         WebElement next = null;
         //根据config，找到包含目录的html的部分
+        Assert.notNull(config.getNextS(),"next selector is null");
+
         if (StringUtils.isNotBlank(config.getNextS())) {
             next = driver.findElementByCssSelector(config.getNextS());
         }
@@ -125,8 +132,8 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public HtmlPage constrctTitle(HtmlPage htmlPage, HostConfig config, File storeFile){
         // chapter的名称
-        Assert.notNull(config.getTitleS(), "HostConfig pageTitle selector is null");
-        WebElement pageTitle = driver.findElementByCssSelector(config.getTitleS());
+        Assert.notNull(config.getPageTitleS(), "HostConfig pageTitle selector is null");
+        WebElement pageTitle = driver.findElementByCssSelector(config.getPageTitleS());
         Assert.notNull(pageTitle, "cssSelector pageTitle  is null: "+ htmlPage.getLink());
         String title = pageTitle.getText();
         Assert.notNull(title, "Title is null: "+ htmlPage.getLink());
@@ -139,7 +146,7 @@ public class ChromeDriverCustomService implements InitializingBean {
         // chapter的内容
         Assert.notNull(config.getContainS(), "HostConfig pageContent selector is null: "+htmlPage.getLink());
 
-        WebElement pageContent = driver.findElementByCssSelector(config.getContainS());
+        WebElement pageContent = driver.findElementByCssSelector(config.getContentS());
         Assert.notNull(pageContent, "cssSelector pageContent is null: "+ htmlPage.getLink());
 
 
@@ -215,7 +222,7 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     }
 
-    public List<String> pageContent(TreeMap<String, String> pages, HostConfig config) {
+    public List<String> pageContent(List<PageLink> pages, HostConfig config) {
         return pageContent(pages, null, config);
     }
 
@@ -268,19 +275,17 @@ public class ChromeDriverCustomService implements InitializingBean {
         return pageContent(pageLink, null, config);
     }
 
-    public List<String> pageContent(TreeMap<String, String> pages, File storeFile, HostConfig config) {
+    public List<String> pageContent(List<PageLink> pages, File storeFile, HostConfig config) {
         if (pages != null && !pages.isEmpty()) {
             List<String> pageContents = new ArrayList<String>();
-            for (String pageLink : pages.keySet()) {
-                String name = pages.get(pageLink);
-                String content = pageContent(pageLink, storeFile, config);
+            for (PageLink page : pages) {
+                String name = page.getName();
+                String content = pageContent(page.getLink(), storeFile, config);
                 log.info("find page: {} content.", name);
 
                 if (ConfigUtil.isPageContent(content)) {
-                    //cache
                     fileCacheService.save2SignalFile(storeFile.getName(), name, content);
                 }
-
                 pageContents.add(content);
             }
             return pageContents;

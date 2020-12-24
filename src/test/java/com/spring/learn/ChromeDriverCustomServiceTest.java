@@ -1,6 +1,7 @@
 package com.spring.learn;
 
 import com.spring.learn.model.HostConfig;
+import com.spring.learn.model.PageLink;
 import com.spring.learn.service.ChromeDriverCustomService;
 import com.spring.learn.service.ConfigCustomService;
 import com.spring.learn.util.CustomerFileUtils;
@@ -27,7 +28,7 @@ public class ChromeDriverCustomServiceTest {
 
         String link = "https://www.bqg5.cc/61_61314/";
 
-        TreeMap<String, String> result = service.findChapterLink(link,null);
+        List<PageLink> result = service.findChapterLink(link,null);
 
         File storeFile = new File("shenhua.txt");
         if (!storeFile.exists()) {
@@ -45,7 +46,7 @@ public class ChromeDriverCustomServiceTest {
 
     @Test
     public void order() throws IOException {
-        String begine = "https://www.dingdiann.com/ddk14238/8050319.html";
+        String begine = "https://www.bqg5.cc/61_61314/143742083.html";
         File storeFile = new File("guatou.txt");
         if (!storeFile.exists()) {
             storeFile.createNewFile();

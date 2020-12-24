@@ -3,20 +3,24 @@ package com.spring.learn.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Setter
 @Getter
-public class HostConfig {
+public class HostConfig implements Serializable {
 
-    private String containSelector;
+    private String hostN;
+
+    private String containS;
 
     private String chapterTagName;
 
-    private String pageContentSelector;
+    private String contentS;
 
-    private String[] removeArray;
+    private String[] remove;
 
-    private String nextSelector;
+    private String nextS;
 
-    private String pageTitleSelector;
+    private String titleS;
 
 }

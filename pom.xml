@@ -77,6 +77,14 @@
 			<version>2.4</version>
 		</dependency>
 
+<!--       通过yaml文件，来加载配置型的信息-->
+		<dependency>
+			<groupId>com.github.sanjusoftware</groupId>
+			<artifactId>yamlbeans</artifactId>
+			<version>1.11</version>
+		</dependency>
+
+
 
 	</dependencies>
 

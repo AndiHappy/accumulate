@@ -25,13 +25,7 @@ public class ChromeDriverCustomServiceTest {
     @Test
     public void findChapterLink() throws IOException {
 
-        String link = "https://www.biduo.cc/biquge/1_1476/";
-//
-//        String pageLink = "https://www.biduo.cc/biquge/15_15881/c4644037.html";
-//
-//        HostConfig hostconfig = configCustomService.findHostConfig(pageLink);
-//
-//        service.pageContent(pageLink,hostconfig);
+        String link = "https://www.bqg5.cc/61_61314/";
 
         TreeMap<String, String> result = service.findChapterLink(link,null);
 

@@ -2,6 +2,7 @@ package com.spring.learn.service;
 
 import com.spring.learn.model.HostConfig;
 import com.spring.learn.model.HtmlPage;
+import com.spring.learn.model.PageLink;
 import com.spring.learn.util.ConfigUtil;
 import com.spring.learn.util.CustomerFileUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -109,8 +110,8 @@ public class ChromeDriverCustomService implements InitializingBean {
     public HtmlPage constrctNext(HtmlPage htmlPage, HostConfig config, File storeFile){
         WebElement next = null;
         //根据config，找到包含目录的html的部分
-        if (StringUtils.isNotBlank(config.getNextSelector())) {
-            next = driver.findElementByCssSelector(config.getNextSelector());
+        if (StringUtils.isNotBlank(config.getNextS())) {
+            next = driver.findElementByCssSelector(config.getNextS());
         }
         if (next != null && next.isEnabled()) {
             String href = next.getAttribute("href");
@@ -124,8 +125,8 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public HtmlPage constrctTitle(HtmlPage htmlPage, HostConfig config, File storeFile){
         // chapter的名称
-        Assert.notNull(config.getPageTitleSelector(), "HostConfig pageTitle selector is null");
-        WebElement pageTitle = driver.findElementByCssSelector(config.getPageTitleSelector());
+        Assert.notNull(config.getTitleS(), "HostConfig pageTitle selector is null");
+        WebElement pageTitle = driver.findElementByCssSelector(config.getTitleS());
         Assert.notNull(pageTitle, "cssSelector pageTitle  is null: "+ htmlPage.getLink());
         String title = pageTitle.getText();
         Assert.notNull(title, "Title is null: "+ htmlPage.getLink());
@@ -136,9 +137,9 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public HtmlPage constrctContent(HtmlPage htmlPage, HostConfig config, File storeFile){
         // chapter的内容
-        Assert.notNull(config.getContainSelector(), "HostConfig pageContent selector is null: "+htmlPage.getLink());
+        Assert.notNull(config.getContainS(), "HostConfig pageContent selector is null: "+htmlPage.getLink());
 
-        WebElement pageContent = driver.findElementByCssSelector(config.getContainSelector());
+        WebElement pageContent = driver.findElementByCssSelector(config.getContainS());
         Assert.notNull(pageContent, "cssSelector pageContent is null: "+ htmlPage.getLink());
 
 
@@ -147,8 +148,8 @@ public class ChromeDriverCustomService implements InitializingBean {
             String content = pageContent.getText();
             if (ConfigUtil.isPageContent(content)) {
                 // 进行过滤
-                if (config != null && config.getRemoveArray() != null && config.getRemoveArray().length > 0) {
-                    String[] remove = config.getRemoveArray();
+                if (config != null && config.getRemove() != null && config.getRemove().length > 0) {
+                    String[] remove = config.getRemove();
                     for (String removeKeys : remove) {
                         content = StringUtils.remove(content, removeKeys);
                     }
@@ -164,7 +165,7 @@ public class ChromeDriverCustomService implements InitializingBean {
     }
 
 
-    public TreeMap<String, String> findChapterLink(String allChaptersLinks, HostConfig config) {
+    public List<PageLink> findChapterLink(String allChaptersLinks, HostConfig config) {
         if (config == null) config = configCustomService.findHostConfig(allChaptersLinks);
 
         driver.get(allChaptersLinks);
@@ -172,35 +173,26 @@ public class ChromeDriverCustomService implements InitializingBean {
         WebElement contain = null;
 
         //根据config，找到包含目录的html的部分
-        if (StringUtils.isNotBlank(config.getContainSelector())) {
-            contain = driver.findElementByCssSelector(config.getContainSelector());
+        if (StringUtils.isNotBlank(config.getContainS())) {
+            contain = driver.findElementByCssSelector(config.getContainS());
         }
 
         if (contain != null && contain.isEnabled()) {
             log.debug("find contain:{}", contain);
 
-            //章节目录链接的去重，排序
-
-            // link ==> name
-            TreeMap<String, String> links2chapterNames = new TreeMap<>();
-
-            // name ==> link
-            TreeMap<String, String> chapterNames2links = new TreeMap<>();
-
             //寻找章节的链接
             if (StringUtils.isNotBlank(config.getChapterTagName())) {
                 List<WebElement> chaptersElements = contain.findElements(By.tagName(config.getChapterTagName()));
                 if (chaptersElements != null && !chaptersElements.isEmpty()) {
-                    for (WebElement chapterElement : chaptersElements
-                    ) {
+                    List<PageLink> pageLinkList = new ArrayList<>();
+                    for (WebElement chapterElement : chaptersElements) {
                         WebElement a = chapterElement.findElement(By.tagName("a"));
                         if (a != null) {
                             String href = a.getAttribute("href");
                             String name = a.getText();
                             //如果匹配的上
                             if (ConfigUtil.chapterLinkPattern.matcher(name).find()) {
-                                links2chapterNames.put(href, name);
-                                chapterNames2links.put(name, href);
+                                pageLinkList.add(new PageLink(href,name));
                                 log.info("name: {} add.", name);
                             } else {
                                 log.info("name: {} discard!!", name);
@@ -209,15 +201,11 @@ public class ChromeDriverCustomService implements InitializingBean {
                             throw new IllegalArgumentException("chapterElement: " + chapterElement + " contains no a");
                         }
                     }
+                    return pageLinkList;
                 } else {
                     // 没有发现章节
                     throw new IllegalArgumentException("containElement: " + contain + " do not contain chapter element");
                 }
-            }
-
-            //是否需要排序
-            if (!links2chapterNames.isEmpty() && !chapterNames2links.isEmpty()) {
-                return links2chapterNames;
             }
         } else {
             throw new IllegalArgumentException("not find contain chapter HTML ELEMENT ");
@@ -241,8 +229,8 @@ public class ChromeDriverCustomService implements InitializingBean {
             WebElement pageContent = null;
 
             //根据config，找到包含文章的html的部分
-            if (StringUtils.isNotBlank(config.getPageContentSelector())) {
-                pageContent = driver.findElementByCssSelector(config.getPageContentSelector());
+            if (StringUtils.isNotBlank(config.getContentS())) {
+                pageContent = driver.findElementByCssSelector(config.getContentS());
             }
 
             if (pageContent != null && pageContent.isEnabled()) {
@@ -250,8 +238,8 @@ public class ChromeDriverCustomService implements InitializingBean {
                 content = pageContent.getText();
                 if (ConfigUtil.isPageContent(content)) {
                     // 进行过滤
-                    if (config != null && config.getRemoveArray() != null && config.getRemoveArray().length > 0) {
-                        String[] remove = config.getRemoveArray();
+                    if (config != null && config.getRemove() != null && config.getRemove().length > 0) {
+                        String[] remove = config.getRemove();
                         for (String removeKeys : remove) {
                             content = StringUtils.remove(content, removeKeys);
                         }

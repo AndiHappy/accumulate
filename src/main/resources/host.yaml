@@ -1,0 +1,19 @@
+!com.spring.learn.model.HostConfig
+containS: "#list > dl"
+hostN: "www.bqg5.cc"
+titleS: "#info > h1"
+chapterTagName: "dd"
+remove: 
+- '44343'
+- dsdasa
+- "\u53bb\u9664"
+- ii0
+--- !com.spring.learn.model.HostConfig
+chapterTagName: "\u7b2c1ge"
+containS: link=>ddda:dadad%$ddd>1
+hostN: www..com1
+remove: 
+- '44343'
+- dsdasa
+- "\u53bb\u9664"
+- ii1

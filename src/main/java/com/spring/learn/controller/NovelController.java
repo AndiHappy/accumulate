@@ -1,13 +1,15 @@
 package com.spring.learn.controller;
 
+import com.spring.learn.model.HtmlPage;
 import com.spring.learn.service.ChromeDriverCustomService;
 import com.spring.learn.util.ConfigUtil;
-import javafx.fxml.Initializable;
+import net.minidev.json.JSONObject;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeDriverService;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -21,6 +23,32 @@ public class NovelController implements InitializingBean {
 
     @Resource
     private ChromeDriverCustomService chromeDriverCustomService;
+
+    @RequestMapping(value="/dl", method = {RequestMethod.POST, RequestMethod.GET})
+    public JSONObject index(@RequestParam(value = "slink") String slink,
+                            @RequestParam(value = "sfile") String sfile
+                              ) {
+        JSONObject result = new JSONObject();
+       try {
+           if(!sfile.endsWith(".txt")){
+               sfile= sfile+".txt";
+           }
+           File store = new File(ConfigUtil.fileStorePath+sfile);
+           if(store.exists()){
+               store.delete();
+           }
+           store.createNewFile();
+           HtmlPage page = chromeDriverCustomService.orderStore(slink,null,store);
+           if(page != null){
+               result.put("msg","success");
+               result.put("file",store.getAbsolutePath());
+           }
+
+       }catch (Exception e){
+           result.put("Exception",e);
+       }
+        return result;
+    }
 
     @RequestMapping(value = "/up", method = {RequestMethod.POST, RequestMethod.GET})
     public ModelAndView uploadFileAction(@RequestParam("uploadFile") MultipartFile uploadFile) {

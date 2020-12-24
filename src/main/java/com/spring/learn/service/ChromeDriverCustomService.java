@@ -95,8 +95,13 @@ public class ChromeDriverCustomService implements InitializingBean {
         driver.get(pageLink);
         log.debug("load:{}", pageLink);
         HtmlPage htmlPage = new HtmlPage(pageLink);
-        htmlPage = constrctContent(htmlPage,config,storeFile);
         htmlPage = constrctTitle(htmlPage,config,storeFile);
+        if(!ConfigUtil.chapterLinkPattern.matcher(htmlPage.getPageTitle()).find()){
+            log.error("discard:{} !",htmlPage.getPageTitle(),htmlPage.getLink());
+        }else{
+            htmlPage = constrctContent(htmlPage,config,storeFile);
+        }
+
         htmlPage = constrctNext(htmlPage,config,storeFile);
         return htmlPage;
     }
@@ -131,10 +136,10 @@ public class ChromeDriverCustomService implements InitializingBean {
 
     public HtmlPage constrctContent(HtmlPage htmlPage, HostConfig config, File storeFile){
         // chapter的内容
-        Assert.notNull(config.getContainSelector(), "HostConfig pageContent selector is null");
+        Assert.notNull(config.getContainSelector(), "HostConfig pageContent selector is null: "+htmlPage.getLink());
 
         WebElement pageContent = driver.findElementByCssSelector(config.getContainSelector());
-        Assert.notNull(pageContent, "cssSelector pageContent is null");
+        Assert.notNull(pageContent, "cssSelector pageContent is null: "+ htmlPage.getLink());
 
 
         if (pageContent != null && pageContent.isEnabled()) {

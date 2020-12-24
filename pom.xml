@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.spring</groupId>
-	<artifactId>learn</artifactId>
+	<artifactId>accumulate</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>learn</name>
 	<description>URL自动化操作</description>
